@@ -137,7 +137,10 @@ class FrostDatastreamMap(FlowFileTransform):
 
             return FlowFileTransformResult(
                 relationship="success",
-                contents=result_contents
+                contents=result_contents.encode("utf-8"),
+                attributes={
+                    "mime.type": "application/json"
+                }
             )
 
         except Exception as e:
