@@ -76,7 +76,9 @@ class FrostDatastreamMap(FlowFileTransform):
             contents_bytes = flowfile.getContentsAsBytes()
             contents = contents_bytes.decode('utf-8')
             data = json.loads(contents)
-            sql = """
+            df = pd.DataFrame(data)
+            source_names = df.source_name.unique().tolist()
+            sql = f"""
             select d.id as datastream_id,
                    json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
                    json_extract_scalar(d.properties, '$.measurement_type')  as datastream_measurement_type,
@@ -86,10 +88,10 @@ class FrostDatastreamMap(FlowFileTransform):
             from frost.public.datastreams d
                      left join frost.public.sensors s on d.sensor_id = s.id
             left join frost.public.things t on d.thing_id = t.id
+            where s.source_name in ({", ".join(f"'{name}'" for name in source_names)})
             order by datastream_id
             """
 
-            df = pd.DataFrame(data)
 
             dbcp_service = context.getProperty(self.DBCP_SERVICE).asControllerService()
             conn = dbcp_service.getConnection()
