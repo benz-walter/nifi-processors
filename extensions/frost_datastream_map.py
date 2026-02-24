@@ -90,10 +90,10 @@ class FrostDatastreamMap(FlowFileTransform):
             sql = f"""
             select d.id as datastream_id,
                    json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
-                   json_extract_scalar(d.properties, '$.measurement_type')  as datastream_measurement_type,
-                   json_extract_scalar(s.properties, '$.id')                as sensor_id,
-                   json_extract_scalar(s.properties, '$.sourceName')        as source_name,
-                   json_extract_scalar(t.properties, '$.id')                as thing_id
+                   json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
+                   json_extract_scalar(s.properties, '$.id')                as {sensor_id},
+                   json_extract_scalar(s.properties, '$.sourceName')        as {source_name},
+                   json_extract_scalar(t.properties, '$.id')                as {thing_id}
             from frost.public.datastreams d
                      left join frost.public.sensors s on d.sensor_id = s.id
             left join frost.public.things t on d.thing_id = t.id
@@ -130,10 +130,10 @@ class FrostDatastreamMap(FlowFileTransform):
             finally:
                 conn.close()
 
-            df = df.merge(df2, left_on=[measurement_type, sensor_id, thing_id, source_name], right_on=['datastream_measurement_type', 'sensor_id', 'thing_id', 'source_name'], how='left')
-            db_rows = df.to_dict(orient='records')
+            df = df.merge(df2, on=[measurement_type, sensor_id, thing_id, source_name], how='left')
+            result = df.to_dict(orient='records')
 
-            result_contents = json.dumps(db_rows, ensure_ascii=False)
+            result_contents = json.dumps(result, ensure_ascii=False)
 
             return FlowFileTransformResult(
                 relationship="success",
