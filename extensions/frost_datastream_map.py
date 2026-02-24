@@ -50,7 +50,23 @@ class FrostDatastreamMap(FlowFileTransform):
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
     )
 
-    properties = [DBCP_SERVICE, MEASUREMENT_TYPE, SENSOR_ID, THING_ID]
+    SOURCE_NAME = PropertyDescriptor(
+        name="Source name",
+        description="Flowfile record key with information about source name",
+        required=True,
+        validators=[StandardValidators.NON_EMPTY_VALIDATOR],
+        expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
+    )
+
+    DESCRIPTIONS = PropertyDescriptor(
+        name="Descriptions",
+        description="Considered entries of description column in sensor table",
+        required=True,
+        validators=[StandardValidators.NON_EMPTY_VALIDATOR],
+        expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
+    )
+
+    properties = [DBCP_SERVICE, MEASUREMENT_TYPE, SENSOR_ID, THING_ID, SOURCE_NAME, DESCRIPTIONS]
 
     def __init__(self, **kwargs):
         pass
@@ -63,12 +79,14 @@ class FrostDatastreamMap(FlowFileTransform):
             measurement_type = context.getProperty(self.MEASUREMENT_TYPE).evaluateAttributeExpressions(flowfile).getValue()
             sensor_id = context.getProperty(self.SENSOR_ID).evaluateAttributeExpressions(flowfile).getValue()
             thing_id = context.getProperty(self.THING_ID).evaluateAttributeExpressions(flowfile).getValue()
+            source_name = context.getProperty(self.SOURCE_NAME).evaluateAttributeExpressions(flowfile).getValue()
+            description = context.getProperty(self.DESCRIPTIONS).evaluateAttributeExpressions(flowfile).getValue()
 
+            descriptions = ", ".join(f"'{desc}'" for desc in description.split(","))
             contents_bytes = flowfile.getContentsAsBytes()
             contents = contents_bytes.decode('utf-8')
             data = json.loads(contents)
             df = pd.DataFrame(data)
-            source_names = df.source_name.unique().tolist()
             sql = f"""
             select d.id as datastream_id,
                    json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
@@ -79,7 +97,7 @@ class FrostDatastreamMap(FlowFileTransform):
             from frost.public.datastreams d
                      left join frost.public.sensors s on d.sensor_id = s.id
             left join frost.public.things t on d.thing_id = t.id
-            where s.source_name in ({", ".join(f"'{name}'" for name in source_names)})
+            where s.description in ({descriptions})
             order by datastream_id
             """
 
@@ -112,7 +130,7 @@ class FrostDatastreamMap(FlowFileTransform):
             finally:
                 conn.close()
 
-            df = df.merge(df2, left_on=[measurement_type, sensor_id, thing_id], right_on=['datastream_measurement_type', 'sensor_id', 'thing_id'], how='left')
+            df = df.merge(df2, left_on=[measurement_type, sensor_id, thing_id, source_name], right_on=['datastream_measurement_type', 'sensor_id', 'thing_id', 'source_name'], how='left')
             db_rows = df.to_dict(orient='records')
 
             result_contents = json.dumps(db_rows, ensure_ascii=False)
