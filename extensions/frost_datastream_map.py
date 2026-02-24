@@ -82,7 +82,7 @@ class FrostDatastreamMap(FlowFileTransform):
             source_name = context.getProperty(self.SOURCE_NAME).evaluateAttributeExpressions(flowfile).getValue()
             description = context.getProperty(self.DESCRIPTIONS).evaluateAttributeExpressions(flowfile).getValue()
 
-            descriptions = ", ".join(f"'{desc}'" for desc in description.split(","))
+            descriptions = ", ".join(f"'{desc.strip()}'" for desc in description.split(","))
             contents_bytes = flowfile.getContentsAsBytes()
             contents = contents_bytes.decode('utf-8')
             data = json.loads(contents)
