@@ -50,15 +50,7 @@ class FrostDatastreamMap(FlowFileTransform):
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
     )
 
-    SOURCE_NAME = PropertyDescriptor(
-        name="Source name",
-        description="Flowfile record key with information about source name",
-        required=True,
-        validators=[StandardValidators.NON_EMPTY_VALIDATOR],
-        expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
-    )
-
-    properties = [DBCP_SERVICE, MEASUREMENT_TYPE, SENSOR_ID, THING_ID, SOURCE_NAME]
+    properties = [DBCP_SERVICE, MEASUREMENT_TYPE, SENSOR_ID, THING_ID]
 
     def __init__(self, **kwargs):
         pass
@@ -71,7 +63,6 @@ class FrostDatastreamMap(FlowFileTransform):
             measurement_type = context.getProperty(self.MEASUREMENT_TYPE).evaluateAttributeExpressions(flowfile).getValue()
             sensor_id = context.getProperty(self.SENSOR_ID).evaluateAttributeExpressions(flowfile).getValue()
             thing_id = context.getProperty(self.THING_ID).evaluateAttributeExpressions(flowfile).getValue()
-            source_name = context.getProperty(self.SOURCE_NAME).evaluateAttributeExpressions(flowfile).getValue()
 
             contents_bytes = flowfile.getContentsAsBytes()
             contents = contents_bytes.decode('utf-8')
@@ -121,7 +112,7 @@ class FrostDatastreamMap(FlowFileTransform):
             finally:
                 conn.close()
 
-            df = df.merge(df2, left_on=[measurement_type, sensor_id, thing_id, source_name], right_on=['datastream_measurement_type', 'sensor_id', 'thing_id', 'source_name'], how='left')
+            df = df.merge(df2, left_on=[measurement_type, sensor_id, thing_id], right_on=['datastream_measurement_type', 'sensor_id', 'thing_id'], how='left')
             db_rows = df.to_dict(orient='records')
 
             result_contents = json.dumps(db_rows, ensure_ascii=False)
