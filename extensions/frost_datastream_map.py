@@ -51,14 +51,14 @@ class FrostDatastreamMap(FlowFileTransform):
     )
 
     SOURCE_NAME = PropertyDescriptor(
-        name="Thing ID",
+        name="Source name",
         description="Flowfile record key with information about source name",
         required=True,
         validators=[StandardValidators.NON_EMPTY_VALIDATOR],
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
     )
 
-    properties = [MEASUREMENT_TYPE, SENSOR_ID, THING_ID, SOURCE_NAME]
+    properties = [DBCP_SERVICE, MEASUREMENT_TYPE, SENSOR_ID, THING_ID, SOURCE_NAME]
 
     def __init__(self, **kwargs):
         pass
