@@ -131,7 +131,7 @@ class FrostDatastreamMap(FlowFileTransform):
                 conn.close()
 
             df = df.merge(df2, on=[measurement_type, sensor_id, thing_id, source_name], how='left')
-            # df = df[~df.datastream_id.isna()]
+            df = df[~df.datastream_id.isna()]
             result = df.to_dict(orient='records')
 
             result_contents = json.dumps(result, ensure_ascii=False)
