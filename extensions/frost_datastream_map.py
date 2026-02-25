@@ -91,9 +91,9 @@ class FrostDatastreamMap(FlowFileTransform):
             select d.id as datastream_id,
                    json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
                    json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
-                   json_extract_scalar(s.properties, '$.id')                as {sensor_id},
+                   cast(json_extract_scalar(s.properties, '$.id') as integer)                as {sensor_id},
                    json_extract_scalar(s.properties, '$.sourceName')        as {source_name},
-                   json_extract_scalar(t.properties, '$.id')                as {thing_id}
+                   cast(json_extract_scalar(t.properties, '$.id') as integer)                as {thing_id}
             from frost.public.datastreams d
                      left join frost.public.sensors s on d.sensor_id = s.id
             left join frost.public.things t on d.thing_id = t.id
@@ -146,7 +146,7 @@ class FrostDatastreamMap(FlowFileTransform):
 
         except Exception as e:
             import traceback
-            error_details = f"Error transforming GeoJSON to WKT: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+            error_details = f"Error mapping datastream IDs: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
             self.logger.error(error_details)
             return FlowFileTransformResult(
                 relationship="failure",
