@@ -91,9 +91,9 @@ class FrostDatastreamMap(FlowFileTransform):
             select d.id as datastream_id,
                    json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
                    json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
-                   cast(json_extract_scalar(s.properties, '$.id') as integer)                as {sensor_id},
+                   json_extract_scalar(s.properties, '$.id')                as {sensor_id},
                    json_extract_scalar(s.properties, '$.sourceName')        as {source_name},
-                   cast(json_extract_scalar(t.properties, '$.id') as integer)                as {thing_id}
+                   json_extract_scalar(t.properties, '$.id')                as {thing_id}
             from frost.public.datastreams d
                      left join frost.public.sensors s on d.sensor_id = s.id
             left join frost.public.things t on d.thing_id = t.id
