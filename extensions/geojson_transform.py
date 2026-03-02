@@ -46,6 +46,8 @@ class GeoJSONTransform(FlowFileTransform):
             contents_bytes = flowfile.getContentsAsBytes()
             contents = contents_bytes.decode('utf-8')
             data = json.loads(contents)
+            if isinstance(data, list):
+                data = data[0]
 
             # Check if it's a FeatureCollection
             if data.get('type') == 'FeatureCollection':
