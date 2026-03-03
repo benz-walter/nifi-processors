@@ -45,8 +45,6 @@ class FrostDatastreamMap(FlowFileTransform):
     THING_ID = PropertyDescriptor(
         name="Thing ID",
         description="Flowfile record key with information about thing ID",
-        required=True,
-        validators=[StandardValidators.NON_EMPTY_VALIDATOR],
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
     )
 
@@ -87,19 +85,32 @@ class FrostDatastreamMap(FlowFileTransform):
             contents = contents_bytes.decode('utf-8')
             data = json.loads(contents)
             df = pd.DataFrame(data)
-            sql = f"""
-            select d.id as datastream_id,
-                   json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
-                   json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
-                   json_extract_scalar(s.properties, '$.id')                as {sensor_id},
-                   json_extract_scalar(s.properties, '$.sourceName')        as {source_name},
-                   json_extract_scalar(t.properties, '$.id')                as {thing_id}
-            from frost.public.datastreams d
-                     left join frost.public.sensors s on d.sensor_id = s.id
-            left join frost.public.things t on d.thing_id = t.id
-            where s.description in ({descriptions})
-            order by datastream_id
-            """
+            if thing_id:
+                sql = f"""
+                select d.id as datastream_id,
+                       json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
+                       json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
+                       json_extract_scalar(s.properties, '$.id')                as {sensor_id},
+                       json_extract_scalar(s.properties, '$.sourceName')        as {source_name},
+                       json_extract_scalar(t.properties, '$.id')                as {thing_id}
+                from frost.public.datastreams d
+                         left join frost.public.sensors s on d.sensor_id = s.id
+                left join frost.public.things t on d.thing_id = t.id
+                where s.description in ({descriptions})
+                order by datastream_id
+                """
+            else:
+                sql = f"""
+                select d.id as datastream_id,
+                       json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
+                       json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
+                       json_extract_scalar(s.properties, '$.id')                as {sensor_id},
+                       json_extract_scalar(s.properties, '$.sourceName')        as {source_name}
+                from frost.public.datastreams d
+                         left join frost.public.sensors s on d.sensor_id = s.id
+                where s.description in ({descriptions})
+                order by datastream_id
+                """
 
 
             dbcp_service = context.getProperty(self.DBCP_SERVICE).asControllerService()
@@ -130,7 +141,10 @@ class FrostDatastreamMap(FlowFileTransform):
             finally:
                 conn.close()
 
-            df = df.merge(df2, on=[measurement_type, sensor_id, thing_id, source_name], how='left')
+            if thing_id:
+                df = df.merge(df2, on=[measurement_type, sensor_id, thing_id, source_name], how='left')
+            else:
+                df = df.merge(df2, on=[measurement_type, sensor_id, source_name], how='left')
             df = df[~df.datastream_id.isna()]
             result = df.to_dict(orient='records')
 
