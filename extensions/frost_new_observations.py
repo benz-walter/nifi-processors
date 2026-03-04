@@ -73,7 +73,7 @@ class FrostObservationCheck(FlowFileTransform):
                 with sensors as (
                     select id, json_extract_scalar(properties, '$.id') as name from frost.public.sensors where description like 'ESE WS%'
                 )
-                SELECT s.name, t.phenomenon_time_end
+                SELECT s.name, cast(t.phenomenon_time_end as varchar) as phenomenon_time_end
                 FROM frost.public.datastreams t inner join sensors s on s.id = t.sensor_id where t.phenomenon_time_end is not null
             """
 
@@ -110,8 +110,8 @@ class FrostObservationCheck(FlowFileTransform):
             value_vars = [val for val in sensor_mapping.values() if val in df.columns]
             df = df.melt(id_vars=[datetime_key], value_vars=value_vars,
                          var_name='Sensor', value_name='Value')
-            df[datetime_key] = pd.to_datetime(df[datetime_key], format=date_time_format)
-            df2.phenomenon_time_end = pd.to_datetime(df2.phenomenon_time_end)
+            df[datetime_key] = pd.to_datetime(df[datetime_key], format=date_time_format, utc=True)
+            df2.phenomenon_time_end = pd.to_datetime(df2.phenomenon_time_end, utc=True)
             df = df.merge(df2, left_on=["Sensor"], right_on=["name"], how='left')
             df = df[(df.DateTime > df.phenomenon_time_end) & (df.Value.notna())]
             result = df.to_dict(orient='records')
