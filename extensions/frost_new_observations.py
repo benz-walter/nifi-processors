@@ -73,7 +73,7 @@ class FrostObservationCheck(FlowFileTransform):
                 with sensors as (
                     select id, json_extract_scalar(properties, '$.id') as name from frost.public.sensors where description like 'ESE WS%'
                 )
-                SELECT s.name, t.phenomenon_time_end
+                SELECT s.name, cast(t.phenomenon_time_end as timestamp) as phenomenon_time_end
                 FROM frost.public.datastreams t inner join sensors s on s.id = t.sensor_id
             """
 
