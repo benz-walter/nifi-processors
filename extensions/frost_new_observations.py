@@ -74,7 +74,7 @@ class FrostObservationCheck(FlowFileTransform):
                     select id, json_extract_scalar(properties, '$.id') as name from frost.public.sensors where description like 'ESE WS%'
                 )
                 SELECT s.name, cast(t.phenomenon_time_end as timestamp) as phenomenon_time_end
-                FROM frost.public.datastreams t inner join sensors s on s.id = t.sensor_id
+                FROM frost.public.datastreams t inner join sensors s on s.id = t.sensor_id where t.phenomenon_time_end is not null
             """
 
             dbcp_service = context.getProperty(self.DBCP_SERVICE).asControllerService()
@@ -110,7 +110,6 @@ class FrostObservationCheck(FlowFileTransform):
             df = df.melt(id_vars=[datetime_key], value_vars=value_vars,
                          var_name='Sensor', value_name='Value')
             df[datetime_key] = pd.to_datetime(df[datetime_key], format=date_time_format)
-            df2 = df2[df2.phenomenon_time_end.notna()]
             df2.phenomenon_time_end = pd.to_datetime(df2.phenomenon_time_end)
             df = df.merge(df2, left_on=["Sensor"], right_on=["name"], how='left')
             df = df[(df.DateTime > df.phenomenon_time_end) & (df.Value.notna())]
