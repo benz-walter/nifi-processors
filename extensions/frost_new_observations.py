@@ -114,6 +114,7 @@ class FrostObservationCheck(FlowFileTransform):
             df2.phenomenon_time_end = pd.to_datetime(df2.phenomenon_time_end, utc=True)
             df = df.merge(df2, left_on=["Sensor"], right_on=["name"], how='left')
             df = df[(df.DateTime > df.phenomenon_time_end) & (df.Value.notna())]
+            df.DateTime = df.DateTime.astype(str)
             result = df.to_dict(orient='records')
 
             result_contents = json.dumps(result, ensure_ascii=False)
