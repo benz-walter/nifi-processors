@@ -73,7 +73,7 @@ class FrostObservationCheck(FlowFileTransform):
                 with sensors as (
                     select id, json_extract_scalar(properties, '$.id') as name from frost.public.sensors where description like 'ESE WS%'
                 )
-                SELECT s.name, cast(t.phenomenon_time_end as timestamp) as phenomenon_time_end
+                SELECT s.name, t.phenomenon_time_end
                 FROM frost.public.datastreams t inner join sensors s on s.id = t.sensor_id where t.phenomenon_time_end is not null
             """
 
@@ -94,7 +94,8 @@ class FrostObservationCheck(FlowFileTransform):
                         while rs.next():
                             row = []
                             for i in range(col_count):
-                                row.append(rs.getObject(i + 1))
+                                value = rs.getString(i + 1)
+                                row.append(value)
                             rows.append(row)
 
                         df2 = pd.DataFrame(rows, columns=columns)
