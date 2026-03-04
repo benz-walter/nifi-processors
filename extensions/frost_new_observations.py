@@ -104,8 +104,10 @@ class FrostObservationCheck(FlowFileTransform):
                     stmt.close()
             finally:
                 conn.close()
+
             df.rename(columns=sensor_mapping, inplace=True)
-            df = df.melt(id_vars=[datetime_key], value_vars=[val for val in sensor_mapping.values() if val in df.columns],
+            value_vars = [val for val in sensor_mapping.values() if val in df.columns]
+            df = df.melt(id_vars=[datetime_key], value_vars=value_vars,
                          var_name='Sensor', value_name='Value')
             df[datetime_key] = pd.to_datetime(df[datetime_key], format=date_time_format)
             df = df.merge(df2, left_on=["Sensor"], right_on=["name"], how='left')
