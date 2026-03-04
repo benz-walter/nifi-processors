@@ -46,6 +46,7 @@ class FrostObservationCheck(FlowFileTransform):
         name="Sensor ID Map",
         description="Map between sensor names of flowfile and database",
         required=True,
+        default_value="{}",
         validators=[StandardValidators.NON_EMPTY_VALIDATOR],
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
     )
@@ -62,7 +63,7 @@ class FrostObservationCheck(FlowFileTransform):
         try:
             datetime_key = context.getProperty(self.DATETIME_KEY).evaluateAttributeExpressions(flowfile).getValue()
             date_time_format = context.getProperty(self.DATETIME_FORMAT).evaluateAttributeExpressions(flowfile).getValue()
-            sensor_mapping = context.getProperty(self.SENSOR_ID_MAPPING).evaluateAttributeExpressions(flowfile).getValue()
+            sensor_mapping = json.loads(context.getProperty(self.SENSOR_ID_MAPPING).evaluateAttributeExpressions(flowfile).getValue())
 
             contents_bytes = flowfile.getContentsAsBytes()
             contents = contents_bytes.decode('utf-8')
@@ -108,7 +109,7 @@ class FrostObservationCheck(FlowFileTransform):
                          var_name='Sensor', value_name='Value')
             df[datetime_key] = pd.to_datetime(df[datetime_key], format=date_time_format)
             df = df.merge(df2, left_on=["Sensor"], right_on=["name"], how='left')
-            df = df[(df.Value.notna())]
+            df = df[(df.DateTime > df.phenomenon_time_end) & (df.Value.notna())]
             result = df.to_dict(orient='records')
 
             result_contents = json.dumps(result, ensure_ascii=False)
