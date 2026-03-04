@@ -108,7 +108,7 @@ class FrostObservationCheck(FlowFileTransform):
                          var_name='Sensor', value_name='Value')
             df[datetime_key] = pd.to_datetime(df[datetime_key], format=date_time_format)
             df = df.merge(df2, left_on=["Sensor"], right_on=["name"], how='left')
-            df = df[(df.DateTime > df.phenomenon_time_end) & (df.Value.notna())]
+            df = df[(df.Value.notna())]
             result = df.to_dict(orient='records')
 
             result_contents = json.dumps(result, ensure_ascii=False)
