@@ -63,7 +63,7 @@ class JoinDatabaseRecords(FlowFileTransform):
         df = pd.DataFrame(flow_data)
 
         sql = context.getProperty(self.SQL_QUERY).evaluateAttributeExpressions(flowfile).getValue()
-        merge_column_string = context.getProperty(self.COLUMN_MAPPING).evaluateAttributeExpressions(flowfile).getValue()
+        merge_column_string = context.getProperty(self.MERGE_COLUMNS).evaluateAttributeExpressions(flowfile).getValue()
         merge_columns = [m.strip() for m in merge_column_string.split(',')]
 
         dbcp_service = context.getProperty(self.DBCP_SERVICE).asControllerService()
