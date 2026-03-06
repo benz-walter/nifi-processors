@@ -30,7 +30,8 @@ class InvokeInsecureHttp(FlowFileSource):
     PASSWORD = PropertyDescriptor(
         name="Password",
         description="Password for basic authentication",
-        required=False
+        required=False,
+        sensitive=True
     )
 
     properties = [URL, USERNAME, PASSWORD]
