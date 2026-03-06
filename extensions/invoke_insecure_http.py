@@ -35,6 +35,9 @@ class InvokeInsecureHttp(FlowFileSource):
 
     properties = [URL, USERNAME, PASSWORD]
 
+    def __init__(self, **kwargs):
+        pass
+
     def getPropertyDescriptors(self):
         return self.properties
 
