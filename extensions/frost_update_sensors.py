@@ -63,7 +63,7 @@ class FROSTSensorUpdate(FlowFileTransform):
     LOCATION_BY_DESCRIPTION = PropertyDescriptor(
         name="Location by description",
         description="Select whether to check location by description",
-        default_value="false:asBoolean()",
+        default_value="false",
         allowable_values=["true", "false"],
         validators=[StandardValidators.BOOLEAN_VALIDATOR],
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
