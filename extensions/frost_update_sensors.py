@@ -151,7 +151,7 @@ class FROSTSensorUpdate(FlowFileTransform):
 
     def getLocationAndCreateIfMissing(self, location_name, location_by_description, description, lat, long, base_url, post_header):
         if location_by_description:
-            property_id = self.getLocationByDescription(base_url, description)
+            property_id = self.getLocationByDescription(description, base_url)
         else:
             property_id = self.getLocationByLatLong(lat, long, base_url)
 
