@@ -373,7 +373,7 @@ class FROSTSensorUpdate(FlowFileTransform):
                 status.append(response.status_code)
             except Exception:
                 # try again with new auth token
-                post_headers = self.getAuthHeader()
+                post_headers = self.getAuthHeader(username, password)
                 response = requests.post(request, data=json.dumps(request_json), headers=post_headers)
                 status.append(response.status_code)
 
