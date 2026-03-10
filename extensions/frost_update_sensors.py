@@ -203,7 +203,7 @@ class FROSTSensorUpdate(FlowFileTransform):
         thing_name = row.thing_name
         thing_description = row.thing_description
 
-        thing_properties_cleaned_up = None if not row.thing_properties else row.thing_properties.replace("'", '"').replace("None", 'null').replace(
+        thing_properties_cleaned_up = {} if not row.thing_properties else row.thing_properties.replace("'", '"').replace("None", 'null').replace(
             "False", 'false').replace("True", 'true')
         thing_properties = json.loads(thing_properties_cleaned_up)
 
