@@ -275,13 +275,13 @@ class FROSTSensorUpdate(FlowFileTransform):
 
     def buildDatastreamBody(self, data, sensor_id, thing_id_reference, sensor_id_reference, observed_properties_id, request_index, base_url):
 
-        stream_description = data.streamDescription
-        stream_name = data.streamNameHeader + str(sensor_id)
-        stream_observed_type = data.streamObservedType
-        stream_unit_name = data.streamUnitName
-        stream_unit_symbol = data.streamUnitSymbol
-        stream_unit_definition = data.streamUnitDefinition
-        stream_measurement_type = data.streamMeasurementType
+        stream_description = data.stream_description
+        stream_name = data.stream_name_header + str(sensor_id)
+        stream_observed_type = data.stream_observed_type
+        stream_unit_name = data.stream_unit_name
+        stream_unit_symbol = data.stream_unit_symbol
+        stream_unit_definition = data.stream_unit_definition
+        stream_measurement_type = data.stream_measurement_type
 
         if isinstance(sensor_id_reference, int) and isinstance(thing_id_reference, int):
             datastream_id = self.getDatastream(sensor_id_reference, stream_measurement_type, thing_id_reference, base_url)
