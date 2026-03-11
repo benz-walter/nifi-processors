@@ -91,9 +91,11 @@ class JoinDatabaseRecords(FlowFileTransform):
                 stmt.close()
         finally:
             conn.close()
+
         if not merge_columns:
             df.merge(df2, how='cross')
-        df = df.merge(df2, on=merge_columns, how='left')
+        else:
+            df = df.merge(df2, on=merge_columns, how='left')
         result = df.to_dict(orient='records')
 
 
