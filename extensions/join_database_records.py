@@ -62,7 +62,7 @@ class JoinDatabaseRecords(FlowFileTransform):
 
         sql = context.getProperty(self.SQL_QUERY).evaluateAttributeExpressions(flowfile).getValue()
         merge_column_string = context.getProperty(self.MERGE_COLUMNS).evaluateAttributeExpressions(flowfile).getValue()
-        merge_columns = [m.strip() for m in merge_column_string.split(',')]
+        merge_columns = [m.strip() for m in merge_column_string.split(',')] if merge_column_string else None
 
         dbcp_service = context.getProperty(self.DBCP_SERVICE).asControllerService()
         conn = dbcp_service.getConnection()
