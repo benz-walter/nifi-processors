@@ -36,10 +36,8 @@ class JoinDatabaseRecords(FlowFileTransform):
 
     MERGE_COLUMNS = PropertyDescriptor(
         name="Merge columns",
-        description="Columns used for merge, must be comma separated and identical for both flowfile and database",
-        required=True,
-        default_value="",
-        validators=[StandardValidators.NON_EMPTY_VALIDATOR],
+        description="Columns used for merge, must be comma separated and identical for both flowfile and database. "
+        "If empty, full outer join is used.",
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
     )
 
@@ -93,7 +91,8 @@ class JoinDatabaseRecords(FlowFileTransform):
                 stmt.close()
         finally:
             conn.close()
-
+        if not merge_columns:
+            df.merge(df2, how='cross')
         df = df.merge(df2, on=merge_columns, how='left')
         result = df.to_dict(orient='records')
 
