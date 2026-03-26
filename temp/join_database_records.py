@@ -6,7 +6,7 @@ from nifiapi.properties import PropertyDescriptor, StandardValidators, Expressio
 from nifiapi.relationship import Relationship
 
 
-class CheckDuplicates(FlowFileTransform):
+class JoinDatabaseRecords(FlowFileTransform):
 
     class Java:
         implements = ['org.apache.nifi.python.processor.FlowFileTransform']
@@ -14,7 +14,7 @@ class CheckDuplicates(FlowFileTransform):
     class ProcessorDetails:
         version = "1.1.0"
         description = (
-            "Checks whether given flowfile content is already contained in database "
+            "Combines flowfile records with records from database"
             "using SQL query and comparing provided columns. Uses a DBCPConnectionPool."
         )
         dependencies = ['pandas']
@@ -34,19 +34,17 @@ class CheckDuplicates(FlowFileTransform):
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
     )
 
-    COLUMN_MAPPING = PropertyDescriptor(
-        name="Column mapping",
-        description="JSON mapping between flowfile fields and database columns",
-        required=True,
-        default_value="{}",
-        validators=[StandardValidators.NON_EMPTY_VALIDATOR],
+    MERGE_COLUMNS = PropertyDescriptor(
+        name="Merge columns",
+        description="Columns used for merge, must be comma separated and identical for both flowfile and database. "
+        "If empty, full outer join is used.",
         expression_language_scope=ExpressionLanguageScope.FLOWFILE_ATTRIBUTES
     )
 
     properties = [
         DBCP_SERVICE,
         SQL_QUERY,
-        COLUMN_MAPPING
+        MERGE_COLUMNS
     ]
 
     def __init__(self, **kwargs):
@@ -55,27 +53,16 @@ class CheckDuplicates(FlowFileTransform):
     def getPropertyDescriptors(self):
         return self.properties
 
-    def getRelationships(self):
-        return {
-            Relationship("success", description="Flowfiles that are not duplicates are routed to this relationship"),
-            Relationship("duplicate", description="Flowfiles that are duplicates are routed to this relationship"),
-        }
-
     def transform(self, context, flowfile):
 
         contents_bytes = flowfile.getContentsAsBytes()
         contents = contents_bytes.decode('utf-8')
         flow_data = json.loads(contents)
-
-        if isinstance(flow_data, dict):
-            flow_data = [flow_data]
+        df = pd.DataFrame(flow_data)
 
         sql = context.getProperty(self.SQL_QUERY).evaluateAttributeExpressions(flowfile).getValue()
-        column_mapping = json.loads(
-            context.getProperty(self.COLUMN_MAPPING)
-            .evaluateAttributeExpressions(flowfile)
-            .getValue()
-        )
+        merge_column_string = context.getProperty(self.MERGE_COLUMNS).evaluateAttributeExpressions(flowfile).getValue()
+        merge_columns = [m.strip() for m in merge_column_string.split(',')] if merge_column_string else None
 
         dbcp_service = context.getProperty(self.DBCP_SERVICE).asControllerService()
         conn = dbcp_service.getConnection()
@@ -97,7 +84,7 @@ class CheckDuplicates(FlowFileTransform):
                             row.append(rs.getObject(i + 1))
                         rows.append(row)
                     
-                    df = pd.DataFrame(rows, columns=columns)
+                    df2 = pd.DataFrame(rows, columns=columns)
                 finally:
                     rs.close()
             finally:
@@ -105,36 +92,16 @@ class CheckDuplicates(FlowFileTransform):
         finally:
             conn.close()
 
-        db_rows = df.to_dict(orient='records')
+        if not merge_columns:
+            df = df.merge(df2, how='cross')
+        else:
+            df = df.merge(df2, on=merge_columns, how='left')
+        result = df.to_dict(orient='records')
 
-        non_duplicates = []
-        duplicates = []
 
-        for item in flow_data:
-            is_duplicate = False
-
-            for db_row in db_rows:
-                if all(
-                        str(item.get(flow_col)) == str(db_row.get(db_col))
-                        for flow_col, db_col in column_mapping.items()
-                ):
-                    is_duplicate = True
-                    duplicates.append(item)
-                    break
-
-            if not is_duplicate:
-                non_duplicates.append(item)
-
-        if non_duplicates:
-            return FlowFileTransformResult(
-                relationship="success",
-                contents=json.dumps(non_duplicates)
-            )
-        
-        if duplicates:
-            return FlowFileTransformResult(
-                relationship="duplicate",
-                contents=json.dumps(duplicates)
-            )
+        return FlowFileTransformResult(
+            relationship="success",
+            contents=json.dumps(result)
+        )
 
         return None
