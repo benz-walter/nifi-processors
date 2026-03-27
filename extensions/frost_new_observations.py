@@ -3,7 +3,6 @@ import pandas as pd
 
 from nifiapi.flowfiletransform import FlowFileTransform, FlowFileTransformResult
 from nifiapi.properties import PropertyDescriptor, StandardValidators, ExpressionLanguageScope
-from nifiapi.relationship import Relationship
 
 
 class FrostObservationCheck(FlowFileTransform):
