@@ -85,7 +85,7 @@ class FrostDatastreamMap(FlowFileTransform):
             df = pd.DataFrame(data)
             if thing_id:
                 sql = f"""
-                select d.id as datastream_id,
+                select cast(d.id as integer) as datastream_id,
                        json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
                        json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
                        json_extract_scalar(s.properties, '$.id')                as {sensor_id},
@@ -99,7 +99,7 @@ class FrostDatastreamMap(FlowFileTransform):
                 """
             else:
                 sql = f"""
-                select d.id as datastream_id,
+                select cast(d.id as integer) as datastream_id,
                        json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
                        json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
                        json_extract_scalar(s.properties, '$.id')                as {sensor_id},

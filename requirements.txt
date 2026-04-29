@@ -1,4 +1,0 @@
-pandas
-pyproj
-requests
-shapely
