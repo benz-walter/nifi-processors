@@ -85,29 +85,24 @@ class FrostDatastreamMap(FlowFileTransform):
             df = pd.DataFrame(data)
             if thing_id:
                 sql = f"""
-                select cast(d.id as integer) as datastream_id,
-                       json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
-                       json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
-                       json_extract_scalar(s.properties, '$.id')                as {sensor_id},
-                       json_extract_scalar(s.properties, '$.sourceName')        as {source_name},
-                       json_extract_scalar(t.properties, '$.id')                as {thing_id}
-                from frost.public.datastreams d
-                         left join frost.public.sensors s on d.sensor_id = s.id
-                left join frost.public.things t on d.thing_id = t.id
-                where s.description in ({descriptions})
-                order by datastream_id
+                select cast(d.datastream_id as integer) as datastream_id,
+                       json_extract_scalar(d.datastream_properties, '$.disabled')          as datastream_disabled,
+                       json_extract_scalar(d.datastream_properties, '$.measurement_type')  as {measurement_type},
+                       sensor_id               as {sensor_id},
+                       source_name        as {source_name},
+                       thing_id                as {thing_id}
+                from datenraum.frost_cached.sensor_things_combined d
+                where d.sensor_description in ({descriptions})
                 """
             else:
                 sql = f"""
-                select cast(d.id as integer) as datastream_id,
-                       json_extract_scalar(d.properties, '$.disabled')          as datastream_disabled,
-                       json_extract_scalar(d.properties, '$.measurement_type')  as {measurement_type},
-                       json_extract_scalar(s.properties, '$.id')                as {sensor_id},
-                       json_extract_scalar(s.properties, '$.sourceName')        as {source_name}
-                from frost.public.datastreams d
-                         left join frost.public.sensors s on d.sensor_id = s.id
-                where s.description in ({descriptions})
-                order by datastream_id
+                select cast(d.datastream_id as integer) as datastream_id,
+                       json_extract_scalar(d.datastream_properties, '$.disabled')          as datastream_disabled,
+                       json_extract_scalar(d.datastream_properties, '$.measurement_type')  as {measurement_type},
+                       sensor_id               as {sensor_id},
+                       source_name        as {source_name}
+                from datenraum.frost_cached.sensor_things_combined d
+                where d.sensor_description in ({descriptions})
                 """
 
 
