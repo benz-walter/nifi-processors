@@ -99,7 +99,7 @@ class FrostDatastreamMap(FlowFileTransform):
                 select cast(d.datastream_id as integer) as datastream_id,
                        json_extract_scalar(d.datastream_properties, '$.disabled')          as datastream_disabled,
                        json_extract_scalar(d.datastream_properties, '$.measurement_type')  as {measurement_type},
-                       sensor_id               as {sensor_id},
+                       cast(sensor_id as integer)               as {sensor_id},
                        source_name        as {source_name}
                 from datenraum.frost_cached.sensor_things_combined d
                 where d.sensor_description in ({descriptions})
@@ -127,6 +127,7 @@ class FrostDatastreamMap(FlowFileTransform):
                             rows.append(row)
 
                         df2 = pd.DataFrame(rows, columns=columns)
+                        df2[sensor_id] = df2[sensor_id].astype(int)
                     finally:
                         rs.close()
                 finally:
