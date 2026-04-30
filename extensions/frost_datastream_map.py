@@ -90,7 +90,7 @@ class FrostDatastreamMap(FlowFileTransform):
                        json_extract_scalar(d.datastream_properties, '$.measurement_type')  as {measurement_type},
                        json_extract_scalar(d.sensor_properties, '$.id')                as {sensor_id},
                        json_extract_scalar(d.sensor_properties, '$.sourceName')        as {source_name},
-                       thing_id                as {thing_id}
+                       json_extract_scalar(d.thing_properties, '$.id')                as {thing_id}
                 from datenraum.frost_cached.sensor_things_combined d
                 where d.sensor_description in ({descriptions})
                 """
