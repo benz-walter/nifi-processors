@@ -83,6 +83,7 @@ class FrostDatastreamMap(FlowFileTransform):
             contents = contents_bytes.decode('utf-8')
             data = json.loads(contents)
             df = pd.DataFrame(data)
+            df[sensor_id] = df[sensor_id].astype(int)
             if thing_id:
                 sql = f"""
                 select cast(d.datastream_id as integer) as datastream_id,
