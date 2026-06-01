@@ -275,7 +275,7 @@ class FROSTSensorUpdate(FlowFileTransform):
     def buildDatastreamBody(self, data, sensor_id, thing_id_reference, sensor_id_reference, observed_properties_id, request_index, base_url):
 
         stream_description = data.stream_description
-        stream_name = data.stream_name_header + str(sensor_id)
+        stream_name = data.stream_name_header + ' ' + str(sensor_id)
         stream_observed_type = data.stream_observed_type
         stream_unit_name = data.stream_unit_name
         stream_unit_symbol = data.stream_unit_symbol
