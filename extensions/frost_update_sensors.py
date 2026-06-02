@@ -268,6 +268,9 @@ class FROSTSensorUpdate(FlowFileTransform):
 
     @staticmethod
     def buildSensorRequest(sensor_name, sensor_description, sensor_id, source_name, sensor_properties):
+        properties = {"id": sensor_id, "sourceInfo": sensor_properties or {}}
+        if source_name:
+            properties["sourceName"] = source_name
         request = {
             "id": "sensor1",
             "atomicityGroup": "group1",
@@ -277,7 +280,7 @@ class FROSTSensorUpdate(FlowFileTransform):
                      "description": sensor_description,
                      "encodingType": "",
                      "metadata": "",
-                     "properties": {"id": sensor_id, "sourceName": source_name, "sourceInfo": sensor_properties}
+                     "properties": properties
                      }
         }
         return request
