@@ -206,8 +206,12 @@ class FROSTSensorUpdate(FlowFileTransform):
         thing_name = row.thing_name
         thing_description = row.thing_description
 
-        thing_properties = None if not row.thing_properties else json.loads(row.thing_properties.replace("'", '"').replace("None", 'null').replace(
-            "False", 'false').replace("True", 'true'))
+        thing_properties = None
+        if row.thing_properties:
+            thing_properties = row.thing_properties
+            if isinstance(thing_properties, str):
+                thing_properties = json.loads(row.thing_properties.replace("'", '"').replace("None", 'null').replace(
+                    "False", 'false').replace("True", 'true'))
 
         sensor_id_reference = "$sensor1"
         sensor_technical_id = self.getSensorId(sensor_id, source_name, base_url)
