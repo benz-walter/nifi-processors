@@ -195,8 +195,11 @@ class FROSTSensorUpdate(FlowFileTransform):
         sensor_name = row.sensor_name
         sensor_description = row.sensor_description
         source_name = row.source_name
-        sensor_properties = None if not row.sensor_properties else json.loads(
-            row.sensor_properties.replace("'", '"').replace("None", 'null'))
+        sensor_properties = None
+        if row.sensor_properties:
+            sensor_properties = row.sensor_properties
+            if isinstance(sensor_properties, str):
+                sensor_properties = json.loads(row.sensor_properties.replace("'", '"').replace("None", 'null'))
 
         thing_id = row.thing_id
 
@@ -363,7 +366,7 @@ class FROSTSensorUpdate(FlowFileTransform):
         for _, row in df_flow.iterrows():
             location_name = row.location_name
             lat = row.location_lat
-            long = row.location_long
+            long = row.location_lon
             location_description = row.location_description
             location_id = self.getLocationAndCreateIfMissing(location_name, location_by_description, location_description, lat, long, base_url, post_headers)
             request_json = self.buildSensorDatastreamRequest(row, property_ids, df_ds, location_id, base_url)
