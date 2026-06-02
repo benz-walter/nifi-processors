@@ -223,7 +223,6 @@ class FROSTSensorUpdate(FlowFileTransform):
 
         thing_id_reference = "$thing1"
         thing_technical_id = self.getThingId(thing_id, source_name, base_url)
-        self.logger.info(f"thing_technical_id: {thing_technical_id}, {thing_id}, {source_name}")
         if thing_technical_id != -1:
             thing_id_reference = thing_technical_id
         else:
@@ -248,9 +247,11 @@ class FROSTSensorUpdate(FlowFileTransform):
             thingFachId=thing_fach_id, sourceName=source_name)
         return self.getIdFromEntity(request)
 
-    # @staticmethod
-    def buildThingRequest(self, thing_name, thing_description, thing_id, location_id, thing_properties, source_name):
-        self.logger.info(f"thing_technical_id: {thing_name}, {thing_description}, {thing_id}, {location_id}, {thing_properties}, {source_name}")
+    @staticmethod
+    def buildThingRequest(thing_name, thing_description, thing_id, location_id, thing_properties, source_name):
+        properties = {"id": thing_id, "sourceInfo": thing_properties or {}}
+        if source_name:
+            properties["sourceName"] = source_name
         request = {
             "id": "thing1",
             "atomicityGroup": "group1",
@@ -260,7 +261,7 @@ class FROSTSensorUpdate(FlowFileTransform):
                 "name": thing_name,
                 "description": thing_description,
                 "Locations": [{"@iot.id": location_id}],
-                "properties": {"id": thing_id, "sourceInfo": thing_properties, "sourceName": source_name}
+                "properties": properties
             }
         }
         return request
