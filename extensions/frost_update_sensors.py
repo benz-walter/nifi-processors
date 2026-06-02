@@ -150,21 +150,18 @@ class FROSTSensorUpdate(FlowFileTransform):
             return value[0]["@iot.id"]
 
     def getLocationAndCreateIfMissing(self, location_name, location_by_description, description, lat, long, base_url, post_header):
-        self.logger.info(f"location: {location_name}, {location_by_description}, {description}, {lat}, {long}")
+
         if location_by_description:
             property_id = self.getLocationByDescription(description, base_url)
         else:
             property_id = self.getLocationByLatLong(lat, long, base_url)
-        self.logger.info(f"property_id: {property_id}")
         if property_id != -1:
             return property_id
 
         self.createLocation(location_name, description, lat, long, base_url, post_header)
         if location_by_description:
-            self.logger.info(f"location_by_description: {self.getLocationByDescription(description, base_url)}")
             return self.getLocationByDescription(description, base_url)
         else:
-            self.logger.info(f"location_by_lat_lon: {self.getLocationByLatLong(lat, long, base_url)}")
             return self.getLocationByLatLong(lat, long, base_url)
 
     @staticmethod
@@ -226,6 +223,7 @@ class FROSTSensorUpdate(FlowFileTransform):
 
         thing_id_reference = "$thing1"
         thing_technical_id = self.getThingId(thing_id, source_name, base_url)
+        self.logger.info(f"thing_technical_id: {thing_technical_id}, {thing_id}, {source_name}")
         if thing_technical_id != -1:
             thing_id_reference = thing_technical_id
         else:
@@ -250,8 +248,9 @@ class FROSTSensorUpdate(FlowFileTransform):
             thingFachId=thing_fach_id, sourceName=source_name)
         return self.getIdFromEntity(request)
 
-    @staticmethod
-    def buildThingRequest(thing_name, thing_description, thing_id, location_id, thing_properties, source_name):
+    # @staticmethod
+    def buildThingRequest(self, thing_name, thing_description, thing_id, location_id, thing_properties, source_name):
+        self.logger.info(f"thing_technical_id: {thing_name}, {thing_description}, {thing_id}, {location_id}, {thing_properties}, {source_name}")
         request = {
             "id": "thing1",
             "atomicityGroup": "group1",
