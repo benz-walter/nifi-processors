@@ -373,7 +373,7 @@ class FROSTSensorUpdate(FlowFileTransform):
             long = row.location_lon
             location_description = row.location_description
             location_id = self.getLocationAndCreateIfMissing(location_name, location_by_description, location_description, lat, long, base_url, post_headers)
-            self.logger.info("location_id", location_id)
+            self.logger.info(f"location_id: {location_id}")
             request_json = self.buildSensorDatastreamRequest(row, property_ids, df_ds, location_id, base_url)
             request = base_url + "/$batch"
             self.logger.info(json.dumps(request_json))
