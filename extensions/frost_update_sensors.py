@@ -150,7 +150,7 @@ class FROSTSensorUpdate(FlowFileTransform):
             return value[0]["@iot.id"]
 
     def getLocationAndCreateIfMissing(self, location_name, location_by_description, description, lat, long, base_url, post_header):
-
+        self.logger.info(f"location_by_description: {location_by_description} ({type(location_by_description)})")
         if location_by_description:
             property_id = self.getLocationByDescription(description, base_url)
         else:
