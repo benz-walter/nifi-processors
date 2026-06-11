@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 import requests
 
 from nifiapi.flowfiletransform import FlowFileTransform, FlowFileTransformResult
@@ -327,6 +326,8 @@ class FROSTSensorUpdate(FlowFileTransform):
         return self.getIdFromEntity(request)
 
     def transform(self, context, flowfile):
+        import pandas as pd
+
         contents_bytes = flowfile.getContentsAsBytes()
         contents = contents_bytes.decode('utf-8')
         flow_data = json.loads(contents)

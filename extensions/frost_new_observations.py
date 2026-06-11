@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 
 from nifiapi.flowfiletransform import FlowFileTransform, FlowFileTransformResult
 from nifiapi.properties import PropertyDescriptor, StandardValidators, ExpressionLanguageScope
@@ -59,6 +58,8 @@ class FrostObservationCheck(FlowFileTransform):
         return self.properties
 
     def transform(self, context, flowfile):
+        import pandas as pd
+
         try:
             datetime_key = context.getProperty(self.DATETIME_KEY).evaluateAttributeExpressions(flowfile).getValue()
             date_time_format = context.getProperty(self.DATETIME_FORMAT).evaluateAttributeExpressions(flowfile).getValue()

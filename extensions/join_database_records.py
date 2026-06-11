@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 
 from nifiapi.flowfiletransform import FlowFileTransform, FlowFileTransformResult
 from nifiapi.properties import PropertyDescriptor, StandardValidators, ExpressionLanguageScope
@@ -54,6 +53,7 @@ class JoinDatabaseRecords(FlowFileTransform):
         return self.properties
 
     def transform(self, context, flowfile):
+        import pandas as pd
 
         contents_bytes = flowfile.getContentsAsBytes()
         contents = contents_bytes.decode('utf-8')

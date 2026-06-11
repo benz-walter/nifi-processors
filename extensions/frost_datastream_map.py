@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 
 from nifiapi.flowfiletransform import FlowFileTransform, FlowFileTransformResult
 from nifiapi.properties import PropertyDescriptor, StandardValidators, ExpressionLanguageScope
@@ -71,6 +70,8 @@ class FrostDatastreamMap(FlowFileTransform):
         return self.properties
 
     def transform(self, context, flowfile):
+        import pandas as pd
+
         try:
             measurement_type = context.getProperty(self.MEASUREMENT_TYPE).evaluateAttributeExpressions(flowfile).getValue()
             sensor_id = context.getProperty(self.SENSOR_ID).evaluateAttributeExpressions(flowfile).getValue()
