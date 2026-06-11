@@ -71,6 +71,18 @@ class FrostDatastreamMap(FlowFileTransform):
 
     def transform(self, context, flowfile):
         import pandas as pd
+        import traceback
+
+        try:
+            self.logger.info("-- Pandas debugging:")
+            self.logger.info(f"   Version                : {pd.__version__}")
+            self.logger.info(f"   Module                 : {repr(pd)}")
+            self.logger.info(f"   pd.core.frame.DataFrame: {repr(pd.core.frame.DataFrame)}")
+            self.logger.info(f"   pd.DataFrame           : {repr(pd.DataFrame)}")
+        except Exception:
+            self.logger.info(traceback.format_exc())
+
+        self.logger.info("-- e/o Pandas debugging.")
 
         try:
             measurement_type = context.getProperty(self.MEASUREMENT_TYPE).evaluateAttributeExpressions(flowfile).getValue()
