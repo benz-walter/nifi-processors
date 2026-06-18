@@ -10,7 +10,7 @@ class CheckDuplicates(FlowFileTransform):
         implements = ['org.apache.nifi.python.processor.FlowFileTransform']
 
     class ProcessorDetails:
-        version = "1.1.1"
+        version = "1.1.0"
         description = (
             "Checks whether given flowfile content is already contained in database "
             "using SQL query and comparing provided columns. Uses a DBCPConnectionPool."
@@ -56,7 +56,7 @@ class CheckDuplicates(FlowFileTransform):
     def getRelationships(self):
         return {
             Relationship("success", description="Flowfiles that are not duplicates are routed to this relationship"),
-            Relationship("duplicated", description="Flowfiles that are duplicates are routed to this relationship"),
+            Relationship("duplicate", description="Flowfiles that are duplicates are routed to this relationship"),
         }
 
     def transform(self, context, flowfile):
@@ -163,7 +163,7 @@ class CheckDuplicates(FlowFileTransform):
 
         if duplicates:
             return FlowFileTransformResult(
-                relationship="duplicated",
+                relationship="duplicate",
                 contents=json.dumps(duplicates)
             )
 
