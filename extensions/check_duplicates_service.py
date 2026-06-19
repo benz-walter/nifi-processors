@@ -133,19 +133,19 @@ class CheckDuplicates(FlowFileTransform):
         non_duplicate_idx = merged[merged['_merge'] == 'left_only'].index
         duplicate_idx = merged[merged['_merge'] == 'both'].index
 
-        non_duplicates = flow_df.loc[non_duplicate_idx].where(flow_df.notna(), other=None).to_dict(orient='records')
-        duplicates = flow_df.loc[duplicate_idx].where(flow_df.notna(), other=None).to_dict(orient='records')
+        non_duplicates_json = flow_df.loc[non_duplicate_idx].to_json(orient='records')
+        duplicates_json = flow_df.loc[duplicate_idx].to_json(orient='records')
 
-        if non_duplicates:
+        if non_duplicate_idx.any():
             return FlowFileTransformResult(
                 relationship="success",
-                contents=json.dumps(non_duplicates)
+                contents=non_duplicates_json
             )
 
-        if duplicates:
+        if duplicate_idx.any():
             return FlowFileTransformResult(
                 relationship="duplicate",
-                contents=json.dumps(duplicates)
+                contents=duplicates_json
             )
 
         return None
