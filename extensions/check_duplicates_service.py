@@ -116,7 +116,7 @@ class CheckDuplicates(FlowFileTransform):
         finally:
             conn.close()
 
-        flow_df = pd.DataFrame(flow_data)
+        flow_df = pd.DataFrame(flow_data).convert_dtypes()
 
         rename_map = {db_col: flow_col for flow_col, db_col in column_mapping.items()}
         db_df_renamed = df[list(column_mapping.values())].rename(columns=rename_map)
